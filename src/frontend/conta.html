@@ -5,41 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Organizerion</title>
     <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
 <main class="container">
 
+    <!-- STATS -->
     <section class="dashboard-stats animate-up">
         <div class="stat-card">
             <span class="text-uppercase">Total do Mês</span>
             <h2 id="total-mes">R$ 0,00</h2>
+            <p class="stat-sub" id="total-count">0 lançamentos</p>
         </div>
         <div class="stat-card alert">
             <span class="text-uppercase">Vencendo Hoje</span>
             <h2 id="total-vencendo">0</h2>
+            <p class="stat-sub" id="vencendo-sub">tudo em dia</p>
         </div>
         <div class="stat-card">
-            <span class="text-uppercase">Sincronizados</span>
+            <span class="text-uppercase">Parcelas Ativas</span>
             <h2 id="total-sync">0</h2>
+            <p class="stat-sub">em andamento</p>
         </div>
     </section>
 
+    <!-- MÊS NAVEGAÇÃO -->
+    <div class="month-nav animate-up">
+        <button class="chevron-btn" onclick="changeMonth(-1)" title="Mês anterior">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <span class="month-label" id="month-label">Junho 2026</span>
+        <button class="chevron-btn" onclick="changeMonth(1)" title="Próximo mês">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </div>
+
     <div class="layout-dashboard">
 
+        <!-- FORMULÁRIO -->
         <aside class="sidebar-form">
             <div class="card animate-up">
-                <h3 class="text-uppercase">Novo Registro</h3>
-                <form id="account-form">
-                    <input type="text" id="descricao" placeholder="Descrição" required>
+                <h3 class="text-uppercase">Novo Lançamento</h3>
+                <form id="account-form" onsubmit="submitConta(event)">
 
-                    <div class="input-row">
-                        <input type="number" step="0.01" id="valor" placeholder="Valor" required>
-                        <input type="date" id="data" required>
+                    <div class="input-group">
+                        <label>Descrição</label>
+                        <input type="text" id="descricao" placeholder="Ex: Conta de luz, Netflix...">
+                        <span class="field-error" id="err-descricao"></span>
                     </div>
 
-                    <div class="modalidade-selector">
-                        <label class="text-uppercase">Modalidade</label>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>Valor (R$)</label>
+                            <input type="number" step="0.01" id="valor" placeholder="0,00">
+                            <span class="field-error" id="err-valor"></span>
+                        </div>
+                        <div class="input-group">
+                            <label>Vencimento</label>
+                            <input type="date" id="data">
+                            <span class="field-error" id="err-data"></span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Modalidade</label>
                         <select id="modalidade" onchange="toggleParcelas()">
                             <option value="fixa">Fixa</option>
                             <option value="esporadica">Esporádica</option>
@@ -48,54 +78,39 @@
                     </div>
 
                     <div id="group-parcelas" class="parcela-box" style="display:none">
-                        <label class="text-uppercase">Número de Parcelas</label>
+                        <label>Número de Parcelas</label>
                         <input type="number" id="qtd-parcelas" min="2" placeholder="Ex: 12">
                     </div>
 
                     <button type="submit" id="btn-registrar" class="btn-primary text-uppercase">
-                        Efetivar Registro
+                        <i class="fa-solid fa-plus" style="margin-right:8px"></i>Efetivar Registro
                     </button>
                 </form>
             </div>
         </aside>
 
+        <!-- TABELA -->
         <section class="main-content">
             <div class="card animate-up">
                 <div class="card-header-actions">
                     <h3 class="text-uppercase">Lançamentos</h3>
-                    <input
-                        type="month"
-                        id="filtro-mes"
-                        value="2026-04"
-                        onchange="renderizarTabela(contasGlobais)"
-                        style="padding: 6px 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 13px;"
-                    >
                     <div class="tab-group">
-                        <button class="tab-btn active" onclick="filtrar('todas')">Todas</button>
-                        <button class="tab-btn" onclick="filtrar('fixa')">Fixas</button>
-                        <button class="tab-btn" onclick="filtrar('parcelada')">Parceladas</button>
+                        <button class="tab-btn active" onclick="filtrar('todas', this)">Todas</button>
+                        <button class="tab-btn" onclick="filtrar('fixa', this)">Fixas</button>
+                        <button class="tab-btn" onclick="filtrar('parcelada', this)">Parceladas</button>
+                        <button class="tab-btn" onclick="filtrar('esporadica', this)">Esporádicas</button>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <table id="accounts-table">
-                        <thead>
-                            <tr class="text-uppercase">
-                                <th>Item</th>
-                                <th>Data</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body"></tbody>
-                    </table>
-                </div>
+                <div class="table-container" id="table-area"></div>
             </div>
         </section>
 
     </div>
 </main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script src="js/app.js"></script>
 </body>
