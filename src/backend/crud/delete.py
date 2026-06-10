@@ -1,5 +1,6 @@
 from database import get_connection
 
+
 def deletar_conta_por_id(conta_id: int) -> None:
     conn = get_connection()
     cursor = conn.cursor()

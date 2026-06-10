@@ -7,17 +7,12 @@ const MESES = [
     'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
 ];
 
-// ============================================================
-// INICIALIZAÇÃO
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Dashboard
     if (document.getElementById('account-form')) {
         setCurrentMonthLabel();
         carregarContas();
     }
 
-    // Página de usuário
     const userForm = document.getElementById('user-form');
     if (userForm) {
         userForm.addEventListener('submit', async (e) => {
@@ -42,14 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ============================================================
-// NAVEGAÇÃO DE MÊS
-// ============================================================
 function setCurrentMonthLabel() {
     const [y, m] = currentMonth.split('-');
-    const label = MESES[parseInt(m) - 1] + ' ' + y;
     const el = document.getElementById('month-label');
-    if (el) el.textContent = label;
+    if (el) el.textContent = MESES[parseInt(m) - 1] + ' ' + y;
 }
 
 function changeMonth(delta) {
@@ -60,22 +51,15 @@ function changeMonth(delta) {
     renderizarTabela(contasGlobais);
 }
 
-// ============================================================
-// FORM: PARCELAS
-// ============================================================
 function toggleParcelas() {
     const tipo = document.getElementById('modalidade').value;
     document.getElementById('group-parcelas').style.display =
         tipo === 'parcelada' ? 'block' : 'none';
 }
 
-// ============================================================
-// FORM: SUBMIT
-// ============================================================
 async function submitConta(e) {
     e.preventDefault();
 
-    // Limpa erros anteriores
     ['descricao', 'valor', 'data'].forEach(f => {
         const el = document.getElementById('err-' + f);
         if (el) el.textContent = '';
@@ -88,18 +72,9 @@ async function submitConta(e) {
 
     let valido = true;
 
-    if (!descricao) {
-        document.getElementById('err-descricao').textContent = 'Informe a descrição';
-        valido = false;
-    }
-    if (!valor || parseFloat(valor) <= 0) {
-        document.getElementById('err-valor').textContent = 'Valor inválido';
-        valido = false;
-    }
-    if (!data) {
-        document.getElementById('err-data').textContent = 'Informe a data';
-        valido = false;
-    }
+    if (!descricao) { document.getElementById('err-descricao').textContent = 'Informe a descrição'; valido = false; }
+    if (!valor || parseFloat(valor) <= 0) { document.getElementById('err-valor').textContent = 'Valor inválido'; valido = false; }
+    if (!data) { document.getElementById('err-data').textContent = 'Informe a data'; valido = false; }
     if (!valido) return;
 
     const btn = document.getElementById('btn-registrar');
@@ -113,7 +88,6 @@ async function submitConta(e) {
             for (let i = 0; i < qtd; i++) {
                 const d = new Date(data + 'T12:00:00');
                 d.setMonth(d.getMonth() + i);
-                const dataParc = d.toISOString().slice(0, 10);
                 promises.push(
                     fetch('http://127.0.0.1:5000/api/contas', {
                         method: 'POST',
@@ -121,7 +95,7 @@ async function submitConta(e) {
                         body: JSON.stringify({
                             descricao: `${descricao} ${i + 1}/${qtd}`,
                             valor,
-                            data: dataParc,
+                            data: d.toISOString().slice(0, 10),
                             modalidade,
                             usuario_id: 2
                         })
@@ -153,9 +127,6 @@ async function submitConta(e) {
     }
 }
 
-// ============================================================
-// API: CARREGAR CONTAS
-// ============================================================
 async function carregarContas() {
     try {
         const response = await fetch('http://127.0.0.1:5000/api/contas/2');
@@ -167,34 +138,26 @@ async function carregarContas() {
     }
 }
 
-// ============================================================
-// RENDER TABELA
-// ============================================================
 function renderizarTabela(contas) {
     const area = document.getElementById('table-area');
     const hojeStr = new Date().toISOString().split('T')[0];
 
-    // filtra pelo mês atual
     const doMes = contas.filter(c => c.vencimento.slice(0, 7) === currentMonth);
     const filtradas = currentFilter === 'todas'
         ? doMes
         : doMes.filter(c => c.tipo === currentFilter);
 
-    // atualiza stats
     const total = doMes.reduce((s, c) => s + c.valor, 0);
     const venceHoje = doMes.filter(c => c.vencimento === hojeStr).length;
     const parcelas = doMes.filter(c => c.tipo === 'parcelada').length;
 
-    document.getElementById('total-mes').textContent =
-        'R$ ' + total.toFixed(2).replace('.', ',');
-    document.getElementById('total-count').textContent =
-        doMes.length + ' lançamento' + (doMes.length !== 1 ? 's' : '');
+    document.getElementById('total-mes').textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
+    document.getElementById('total-count').textContent = doMes.length + ' lançamento' + (doMes.length !== 1 ? 's' : '');
     document.getElementById('total-vencendo').textContent = venceHoje;
     document.getElementById('vencendo-sub').textContent =
         venceHoje > 0 ? venceHoje + ' conta' + (venceHoje > 1 ? 's' : '') + ' hoje' : 'tudo em dia';
     document.getElementById('total-sync').textContent = parcelas;
 
-    // estado vazio
     if (!filtradas.length) {
         area.innerHTML = `
             <div class="empty-state">
@@ -231,20 +194,13 @@ function renderizarTabela(contas) {
         <table id="accounts-table">
             <thead>
                 <tr class="text-uppercase">
-                    <th>Item</th>
-                    <th>Vencimento</th>
-                    <th>Valor</th>
-                    <th>Tipo</th>
-                    <th></th>
+                    <th>Item</th><th>Vencimento</th><th>Valor</th><th>Tipo</th><th></th>
                 </tr>
             </thead>
             <tbody id="table-body">${rows}</tbody>
         </table>`;
 }
 
-// ============================================================
-// FILTROS
-// ============================================================
 function filtrar(tipo, btn) {
     currentFilter = tipo;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -252,9 +208,6 @@ function filtrar(tipo, btn) {
     renderizarTabela(contasGlobais);
 }
 
-// ============================================================
-// DELETAR
-// ============================================================
 async function deletarConta(id) {
     if (!confirm('Deseja remover este lançamento?')) return;
     try {
@@ -271,9 +224,6 @@ async function deletarConta(id) {
     }
 }
 
-// ============================================================
-// UTILITÁRIOS
-// ============================================================
 function formatarData(dataISO) {
     const [y, m, d] = dataISO.split('-');
     return `${d}/${m}/${y}`;

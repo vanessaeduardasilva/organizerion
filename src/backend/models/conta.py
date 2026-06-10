@@ -1,5 +1,3 @@
-# modelo de dados da conta
-
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
@@ -14,13 +12,12 @@ class TipoConta(str, Enum):
 
 @dataclass
 class Conta:
-    id: Optional[int]              
-    usuario_id: int             
-    descricao: str                
-    valor: float                 
-    vencimento: date              
-    tipo: TipoConta               
-    parcela_atual: int = 1         
-    total_parcelas: int = 1      
-    sincronizado: bool = False     
- 
+    id: Optional[int]
+    usuario_id: int
+    descricao: str
+    valor: float
+    vencimento: date
+    tipo: TipoConta
+    parcela_atual: int = 1
+    total_parcelas: int = 1
+    sincronizado: bool = False
